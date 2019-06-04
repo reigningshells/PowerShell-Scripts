@@ -201,7 +201,7 @@ https://github.com/reigningshells
 			[ref] $pi) | Out-Null
 
 		$error = [Kernel32]::GetLastError()
-		Write-Output "[*] $Command - pid: $pi.dwProcessId - Last error: $error`n"
+		Write-Output "[*] $Command - pid: $($pi.dwProcessId) - Last error: $error`n"
 	}
 	finally
 	{
