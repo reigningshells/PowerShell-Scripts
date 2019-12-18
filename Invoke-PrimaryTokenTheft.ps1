@@ -144,11 +144,9 @@ https://github.com/reigningshells
 
 "@
 		
-	$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')
-	
-	# Needs Admin privs
-	if (!$IsAdmin) {
-		Write-Output "`n[!] Administrator privileges are required!`n"
+	# Must be run from high integrity process
+	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0) {
+		Write-Output "`n[!] Must be run as administrator!`n"
 		Return
 	}
 
@@ -165,7 +163,7 @@ https://github.com/reigningshells
 	# 0x02 | 0x01 | 0x08 = 0x0B
 	if([Advapi32]::OpenProcessToken($processHandle, 0x0B, [ref]$tokenHandle))
 	{
-		Write-Output "[+] OpenProcessToken() success!"
+		Write-Verbose "[+] OpenProcessToken() success!"
 	}
 	else
 	{
@@ -179,7 +177,7 @@ https://github.com/reigningshells
 	$SECURITY_ATTRIBUTES = New-Object SECURITY_ATTRIBUTES
 	if([Advapi32]::DuplicateTokenEx($tokenHandle, 0x18B, [ref] $SECURITY_ATTRIBUTES, 2, 1, [ref] $duplicateTokenHandle))
 	{
-		Write-Output "[+] DuplicateTokenEx() success!"
+		Write-Verbose "[+] DuplicateTokenEx() success!"
 	}
 	else
 	{
