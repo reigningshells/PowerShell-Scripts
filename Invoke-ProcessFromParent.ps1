@@ -147,12 +147,9 @@ https://github.com/reigningshells
 	}
 "@
 
-	$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')
-	
-	# Needs Admin privs
-	if (!$IsAdmin) 
-	{
-		Write-Output "`n[!] Administrator privileges are required!`n"
+	# Must be run from high integrity process
+	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0) {
+		Write-Output "`n[!] Must be run as administrator!`n"
 		Return
 	}
 
@@ -182,12 +179,12 @@ https://github.com/reigningshells
 			[IntPtr]::Zero, 
 			[IntPtr]::Zero) | Out-Null
 
-		Write-Output "[+] Updated proc attribute list"
+		Write-Verbose "[+] Updated proc attribute list"
 		
 		$SecAttr = New-Object SECURITY_ATTRIBUTES
 		$SecAttr.nLength = [System.Runtime.InteropServices.Marshal]::SizeOf($SecAttr)
 		
-		Write-Output "[+] Starting $Command ..."
+		Write-Verbose "[+] Starting $Command ..."
 
 		[Kernel32]::CreateProcess($Command, 
 			$CommandArgs, 
