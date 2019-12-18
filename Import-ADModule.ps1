@@ -2,17 +2,17 @@ function Import-ADModule
 {
 <#
 .SYNOPSIS
-This is a simple PowerShell script to import Microsoft.ActiveDirectory.Management.dll without writing DLL to disk.
+This is a simple PowerShell script to import Microsoft.ActiveDirectory.Management.dll without writing the DLL to disk.
 
 .DESCRIPTION
-This is a simple PowerShell script to import Microsoft.ActiveDirectory.Management.dll without writing DLL to disk.
+This is a simple PowerShell script to import Microsoft.ActiveDirectory.Management.dll without writing the DLL to disk.  
 The DLL byte array was compressed to cut down on the size of this file.
 
 You can replace compressedADModule with a compressed byte array of your own Microsoft.ActiveDirectory.Management.dll 
 if you don't trust mine :-P
 
 .EXAMPLE
-PS > Import-ActiveDirectory
+PS > Import-ADModule
 
 Use the above command to import Microsoft.ActiveDirectory.Management.dll without writing it to disk.
 
