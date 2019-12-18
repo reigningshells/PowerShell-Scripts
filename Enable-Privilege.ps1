@@ -88,23 +88,28 @@ https://github.com/reigningshells
 
 "@
 		
-	$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')
+	# Must be run from high integrity process
+	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0) {
+		Write-Output "`n[!] Must be run as administrator!`n"
+		Return
+	}
 	
-	# Needs Admin privs
-	if (!$IsAdmin) {
-		Write-Output "`n[!] Administrator privileges are required!`n"
+	# Check PID
+	$IsValidPID = (Get-Process | Select -Expand Id) -Contains $ProcID
+	if (!$IsValidPID) {
+		Write-Output "`n[!] The specified PID does not exist!`n"
 		Return
 	}
 
 	# Get process handle
 	$ProcHandle = (Get-Process -Id $ProcID).Handle
-	Write-Output "`n[+] Process handle: $ProcHandle"
+	Write-Verbose "`n[+] Process handle: $ProcHandle"
 
 	# Open token handle with TOKEN_ADJUST_PRIVILEGES bor TOKEN_QUERY
-	Write-Output "`n[+] Calling Advapi32::OpenProcessToken"
+	Write-Verbose "`n[+] Calling Advapi32::OpenProcessToken"
 	$hTokenHandle = [IntPtr]::Zero
 	$CallResult = [Advapi32]::OpenProcessToken($ProcHandle, 0x28, [ref]$hTokenHandle)
-	Write-Output "[+] Token handle with TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY: $hTokenHandle`n"
+	Write-Verbose "[+] Token handle with TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY: $hTokenHandle`n"
 
 	# Prepare TokPriv1Luid container
 	$TokPriv1Luid = New-Object TokPriv1Luid
@@ -113,13 +118,13 @@ https://github.com/reigningshells
 
 	# Get privilege luid
 	$LuidVal = $Null
-	Write-Output "[+] Calling Advapi32::LookupPrivilegeValue --> $Priv"
+	Write-Verbose "[+] Calling Advapi32::LookupPrivilegeValue --> $Priv"
 	$CallResult = [Advapi32]::LookupPrivilegeValue($null, $Priv, [ref]$LuidVal)
-	Write-Output "[+] $Priv LUID value: $LuidVal`n"
+	Write-Verbose "[+] $Priv LUID value: $LuidVal`n"
 	$TokPriv1Luid.Luid = $LuidVal
 
 	# Enable privilege for the process
-	Write-Output "[+] Calling Advapi32::AdjustTokenPrivileges"
+	Write-Verbose "[+] Calling Advapi32::AdjustTokenPrivileges"
 	$CallResult = [Advapi32]::AdjustTokenPrivileges($hTokenHandle, $False, [ref]$TokPriv1Luid, 0, [IntPtr]::Zero, [IntPtr]::Zero)
 	if (!$CallResult) {
 		$LastError = [Kernel32]::GetLastError()
