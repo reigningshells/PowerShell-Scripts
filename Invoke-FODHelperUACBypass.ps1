@@ -4,12 +4,12 @@ function Invoke-FODHelperUACBypass
 .SYNOPSIS
 This is a simple PowerShell function to bypass UAC by abusing the fact that
 the autoelevate executable, FODHelper.exe, queries registry entries under 
-control of the current user (HKCU).
+control of the current user (HKCU).  All credit goes to @winscripting
 
 .DESCRIPTION
 This is a simple PowerShell function to bypass UAC by abusing the fact that
 the autoelevate executable, FODHelper.exe, queries registry entries under 
-control of the current user (HKCU).
+control of the current user (HKCU). All credit goes to @winscripting
 
 .PARAMETER Command
 Full path of what you would like to run as administrator, including arguments.
