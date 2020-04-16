@@ -144,9 +144,10 @@ https://github.com/reigningshells
 
 "@
 		
-	# Must be run from high integrity process
-	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0) {
-		Write-Output "`n[!] Must be run as administrator!`n"
+	# Must be run from high or system integrity process
+	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0 -and 
+	   ($(whoami /groups) -like "*S-1-16-16384*").length -eq 0) {
+		Write-Output "`n[!] Must be run elevated!`n"
 		Return
 	}
 
