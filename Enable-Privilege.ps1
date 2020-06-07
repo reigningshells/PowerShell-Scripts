@@ -91,26 +91,26 @@ https://github.com/reigningshells
 	# Must be run from high or system integrity process
 	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0 -and 
 	   ($(whoami /groups) -like "*S-1-16-16384*").length -eq 0) {
-		Write-Output "`n[!] Must be run elevated!`n"
-		Return
+		Write-Output "[!] Must be run elevated!"
+		return
 	}
 	
 	# Check PID
 	$IsValidPID = (Get-Process | Select -Expand Id) -Contains $ProcID
 	if (!$IsValidPID) {
-		Write-Output "`n[!] The specified PID does not exist!`n"
-		Return
+		Write-Output "[!] The specified PID does not exist!"
+		return
 	}
 
 	# Get process handle
 	$ProcHandle = (Get-Process -Id $ProcID).Handle
-	Write-Verbose "`n[+] Process handle: $ProcHandle"
+	Write-Verbose "[+] Process handle: $ProcHandle"
 
 	# Open token handle with TOKEN_ADJUST_PRIVILEGES bor TOKEN_QUERY
-	Write-Verbose "`n[+] Calling Advapi32::OpenProcessToken"
+	Write-Verbose "[+] Calling Advapi32::OpenProcessToken"
 	$hTokenHandle = [IntPtr]::Zero
 	$CallResult = [Advapi32]::OpenProcessToken($ProcHandle, 0x28, [ref]$hTokenHandle)
-	Write-Verbose "[+] Token handle with TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY: $hTokenHandle`n"
+	Write-Verbose "[+] Token handle with TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY: $hTokenHandle"
 
 	# Prepare TokPriv1Luid container
 	$TokPriv1Luid = New-Object TokPriv1Luid
@@ -121,7 +121,12 @@ https://github.com/reigningshells
 	$LuidVal = $Null
 	Write-Verbose "[+] Calling Advapi32::LookupPrivilegeValue --> $Priv"
 	$CallResult = [Advapi32]::LookupPrivilegeValue($null, $Priv, [ref]$LuidVal)
-	Write-Verbose "[+] $Priv LUID value: $LuidVal`n"
+	if ($LuidVal -eq 0)
+	{
+		Write-Output "[!] $Priv is an invalid privilege!"
+		return
+	}
+	Write-Verbose "[+] $Priv LUID value: $LuidVal"
 	$TokPriv1Luid.Luid = $LuidVal
 
 	# Enable privilege for the process
@@ -129,8 +134,8 @@ https://github.com/reigningshells
 	$CallResult = [Advapi32]::AdjustTokenPrivileges($hTokenHandle, $False, [ref]$TokPriv1Luid, 0, [IntPtr]::Zero, [IntPtr]::Zero)
 	if (!$CallResult) {
 		$LastError = [Kernel32]::GetLastError()
-		Write-Output "[!] GetLastError returned: $LastError`n"
-		Return
+		Write-Output "[!] GetLastError returned: $LastError"
+		return
 	}
-	Write-Output "[*] $Priv is enabled!`n"
+	Write-Output "[*] $Priv is enabled!"
 }
