@@ -146,15 +146,6 @@ https://github.com/reigningshells
 		public static extern bool CloseHandle(IntPtr hObject);
 	}
 "@
-
-	# Must be run from high or system integrity process
-	if(($(whoami /groups) -like "*S-1-16-12288*").length -eq 0 -and 
-	   ($(whoami /groups) -like "*S-1-16-16384*").length -eq 0) {
-		Write-Output "`n[!] Must be run elevated!`n"
-		Return
-	}
-
-	[System.Diagnostics.Process]::EnterDebugMode()
 	
 	$pi = New-Object PROCESS_INFORMATION
         $si = New-Object STARTUPINFOEX
